@@ -8,3 +8,4 @@ C:\Users\ADMIN\source\repos\WindowsFormsApp\WindowsFormsApp\obj\Debug\WindowsFor
 C:\Users\ADMIN\source\repos\WindowsFormsApp\WindowsFormsApp\obj\Debug\WindowsFormsApp.csproj.CoreCompileInputs.cache
 C:\Users\ADMIN\source\repos\WindowsFormsApp\WindowsFormsApp\obj\Debug\WindowsFormsApp.exe
 C:\Users\ADMIN\source\repos\WindowsFormsApp\WindowsFormsApp\obj\Debug\WindowsFormsApp.pdb
+C:\Users\ADMIN\source\repos\WindowsFormsApp\WindowsFormsApp\obj\Debug\WindowsFormsApp.Quanlysinhvien.resources

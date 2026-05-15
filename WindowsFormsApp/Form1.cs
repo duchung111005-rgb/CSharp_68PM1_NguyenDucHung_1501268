@@ -34,6 +34,12 @@ namespace WindowsFormsApp
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Information
                 );
+
+                Quanlysinhvien frm = new Quanlysinhvien();
+
+                frm.Show();
+
+                this.Hide();
             }
             else
             {
