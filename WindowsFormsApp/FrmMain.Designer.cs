@@ -1,6 +1,6 @@
 ﻿namespace WindowsFormsApp
 {
-    partial class Quanlysinhvien
+    partial class FrmMain
     {
         /// <summary>
         /// Required designer variable.
@@ -30,14 +30,14 @@
         {
             this.SuspendLayout();
             // 
-            // Quanlysinhvien
+            // FrmMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1002, 674);
-            this.Name = "Quanlysinhvien";
-            this.Text = "Quanlysinhvien";
-            this.Load += new System.EventHandler(this.Quanlysinhvien_Load);
+            this.ClientSize = new System.Drawing.Size(816, 459);
+            this.Name = "FrmMain";
+            this.Text = "FrmMain";
+            this.Load += new System.EventHandler(this.FrmMain_Load);
             this.ResumeLayout(false);
 
         }

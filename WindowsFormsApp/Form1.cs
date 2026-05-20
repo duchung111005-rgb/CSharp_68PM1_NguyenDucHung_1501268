@@ -1,11 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace WindowsFormsApp
@@ -16,15 +9,17 @@ namespace WindowsFormsApp
         {
             InitializeComponent();
 
+            // Ẩn mật khẩu
             txtPassword.PasswordChar = '*';
         }
 
+        // Nút đăng nhập
         private void button1_Click(object sender, EventArgs e)
         {
             string studentEmail = "hung1501268@st.edu.vn";
-
             string studentId = "1501268";
 
+            // Kiểm tra đăng nhập
             if (txtEmail.Text == studentEmail &&
                 txtPassword.Text == studentId)
             {
@@ -35,30 +30,45 @@ namespace WindowsFormsApp
                     MessageBoxIcon.Information
                 );
 
-                Quanlysinhvien frm = new Quanlysinhvien();
+                // Mở form chính
+                FrmMain frm = new FrmMain();
 
                 frm.Show();
 
+                // Ẩn form login
                 this.Hide();
             }
             else
             {
                 MessageBox.Show(
-                    "Đăng nhập thất bại",
+                    "Sai email hoặc mật khẩu",
                     "Thông báo",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error
                 );
             }
-
         }
 
+        // Event txtEmail
         private void txtEmail_TextChanged(object sender, EventArgs e)
         {
 
         }
 
+        // Event label Email
         private void lblEmail_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        // Event password
+        private void txtPassword_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        // Event form load
+        private void Form1_Load(object sender, EventArgs e)
         {
 
         }
