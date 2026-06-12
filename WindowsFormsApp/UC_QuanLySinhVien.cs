@@ -143,8 +143,47 @@ namespace WindowsFormsApp
             {
                 dtNgaySinh.Value = Convert.ToDateTime(row.Cells["ngaysinh"].Value);
             }
+
+            txtMaSV.Enabled = false;
         }
 
+        private void BtnSua_Click(object sender, EventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(txtMaSV.Text))
+            {
+                MessageBox.Show("Vui lòng chọn sinh viên cần sửa!");
+                return;
+            }
+
+            int maSV = Convert.ToInt32(txtMaSV.Text);
+
+            var sv = db.tbl_sinhviens.SingleOrDefault(x => x.id == maSV);
+
+            if (sv == null)
+            {
+                MessageBox.Show("Không tìm thấy sinh viên!");
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(txtHoTen.Text)
+                || string.IsNullOrWhiteSpace(cbGioiTinh.Text)
+                || string.IsNullOrWhiteSpace(cbLop.Text))
+            {
+                MessageBox.Show("Vui lòng nhập đầy đủ thông tin!");
+                return;
+            }
+
+            sv.hoten = txtHoTen.Text.Trim();
+            sv.gioitinh = cbGioiTinh.Text;
+            sv.ngaysinh = dtNgaySinh.Value.Date;
+            sv.malop = cbLop.Text;
+
+            db.SubmitChanges();
+
+            MessageBox.Show("Cập nhật sinh viên thành công!");
+
+            LoadSinhVien();
+        }
         private void CreateUI()
         {
             this.Dock = DockStyle.Fill;
@@ -252,6 +291,8 @@ namespace WindowsFormsApp
             btnThem.Click += BtnThem_Click;
 
             btnSua = new Button();
+
+            btnSua.Click += BtnSua_Click;
 
             btnSua.Text = "Sửa";
 
