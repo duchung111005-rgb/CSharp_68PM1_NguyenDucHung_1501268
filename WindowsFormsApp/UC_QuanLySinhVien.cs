@@ -184,6 +184,83 @@ namespace WindowsFormsApp
 
             LoadSinhVien();
         }
+
+        private void BtnLamMoi_Click(object sender, EventArgs e)
+        {
+            txtMaSV.Enabled = true;
+
+            txtMaSV.Clear();
+            txtHoTen.Clear();
+
+            cbGioiTinh.SelectedIndex = 0;
+
+            if (cbLop.Items.Count > 0)
+                cbLop.SelectedIndex = 0;
+
+            dtNgaySinh.Value = DateTime.Now;
+
+            txtMaSV.Focus();
+
+            dgvSinhVien.ClearSelection();
+        }
+
+        private void BtnXoa_Click(object sender, EventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(txtMaSV.Text))
+            {
+                MessageBox.Show(
+                    "Vui lòng chọn sinh viên cần xóa",
+                    "Thông báo",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning
+                );
+
+                return;
+            }
+
+            DialogResult result = MessageBox.Show(
+                "Bạn có chắc muốn xóa sinh viên này?",
+                "Xác nhận",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question
+            );
+
+            if (result == DialogResult.No)
+            {
+                return;
+            }
+
+            int maSV = Convert.ToInt32(txtMaSV.Text);
+
+            var sv = db.tbl_sinhviens.SingleOrDefault(s => s.id == maSV);
+
+            if (sv == null)
+            {
+                MessageBox.Show(
+                    "Không tìm thấy sinh viên",
+                    "Thông báo",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error
+                );
+
+                return;
+            }
+
+            db.tbl_sinhviens.DeleteOnSubmit(sv);
+
+            db.SubmitChanges();
+
+            MessageBox.Show(
+                "Xóa sinh viên thành công",
+                "Thông báo",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information
+            );
+
+            LoadSinhVien();
+
+            BtnLamMoi_Click(null, null);
+        }
         private void CreateUI()
         {
             this.Dock = DockStyle.Fill;
@@ -316,6 +393,8 @@ namespace WindowsFormsApp
 
             btnXoa.ForeColor = Color.White;
 
+            btnXoa.Click += BtnXoa_Click;
+
             btnLamMoi = new Button();
 
             btnLamMoi.Text = "Làm mới";
@@ -327,6 +406,8 @@ namespace WindowsFormsApp
             btnLamMoi.BackColor = Color.Gray;
 
             btnLamMoi.ForeColor = Color.White;
+
+            btnLamMoi.Click += BtnLamMoi_Click;
 
             groupThongTin.Controls.Add(lblMaSV);
             groupThongTin.Controls.Add(txtMaSV);
