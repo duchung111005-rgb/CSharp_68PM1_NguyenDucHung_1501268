@@ -126,6 +126,25 @@ namespace WindowsFormsApp
             LoadSinhVien();
         }
 
+        private void DgvSinhVien_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex < 0) return;
+
+            DataGridViewRow row = dgvSinhVien.Rows[e.RowIndex];
+
+            txtMaSV.Text = row.Cells["id"].Value?.ToString();
+            txtHoTen.Text = row.Cells["hoten"].Value?.ToString();
+
+            cbGioiTinh.Text = row.Cells["gioitinh"].Value?.ToString();
+
+            cbLop.Text = row.Cells["malop"].Value?.ToString();
+
+            if (row.Cells["ngaysinh"].Value != null)
+            {
+                dtNgaySinh.Value = Convert.ToDateTime(row.Cells["ngaysinh"].Value);
+            }
+        }
+
         private void CreateUI()
         {
             this.Dock = DockStyle.Fill;
@@ -327,6 +346,8 @@ namespace WindowsFormsApp
             dgvSinhVien.AllowUserToAddRows = false;
 
             this.Controls.Add(dgvSinhVien);
+
+            dgvSinhVien.CellClick += DgvSinhVien_CellClick;
 
             int centerX = 930;
 
