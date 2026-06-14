@@ -13,6 +13,10 @@ namespace WindowsFormsApp
         private int pageSize = 5;
         private int totalPages = 1;
 
+
+        private bool dangXemSinhVien = false;
+        private Button btnQuayLai;
+
         GroupBox groupThongTin;
 
         Label lblId;
@@ -34,6 +38,8 @@ namespace WindowsFormsApp
         Label lblTimKiem;
         TextBox txtTimKiem;
         Button btnTim;
+
+        Label lblTitle;
 
         DataGridView dgvLopHoc;
 
@@ -92,7 +98,11 @@ namespace WindowsFormsApp
 
         private void DgvLopHoc_CellClick(object sender, DataGridViewCellEventArgs e)
         {
-            if (e.RowIndex < 0) return;
+            if (e.RowIndex < 0)
+                return;
+
+            if (dangXemSinhVien)
+                return;
 
             DataGridViewRow row = dgvLopHoc.Rows[e.RowIndex];
 
@@ -325,6 +335,62 @@ namespace WindowsFormsApp
             currentPage = totalPages;
             LoadLopHoc();
         }
+
+        private void BtnXemSinhVien_Click(object sender, EventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(txtMaLop.Text))
+            {
+                MessageBox.Show("Vui lòng chọn lớp học");
+                return;
+            }
+
+            string maLop = txtMaLop.Text.Trim();
+
+            var dsSinhVien = db.tbl_sinhviens
+                .Where(x => x.malop == maLop)
+                .Select(x => new
+                {
+                    x.id,
+                    x.hoten,
+                    x.gioitinh,
+                    x.ngaysinh,
+                    x.malop
+                })
+                .ToList();
+
+            if (dsSinhVien.Count == 0)
+            {
+                MessageBox.Show("Lớp này chưa có sinh viên!");
+                return;
+            }
+
+            dangXemSinhVien = true;
+
+            dgvLopHoc.DataSource = dsSinhVien;
+
+            lblTitle.Text = "Danh sách sinh viên lớp " + maLop;
+            lblTrang.Text = "Tổng số sinh viên: " + dsSinhVien.Count;
+
+            btnQuayLai.Visible = true;
+
+            MessageBox.Show(
+                "Lấy danh sách sinh viên thành công!",
+                "Thông báo",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information
+            );
+        }
+
+        private void BtnQuayLai_Click(object sender, EventArgs e)
+        {
+            dangXemSinhVien = false;
+
+            lblTitle.Text = "Danh sách lớp học";
+
+            LoadLopHoc();
+
+            btnQuayLai.Visible = false;
+        }
         private void CreateUI()
         {
             this.Dock = DockStyle.Fill;
@@ -332,7 +398,7 @@ namespace WindowsFormsApp
             this.BackColor = Color.WhiteSmoke;
 
             groupThongTin = new GroupBox();
-
+            
             groupThongTin.Text = "Thông tin lớp học";
 
             groupThongTin.Location = new Point(20, 50);
@@ -457,6 +523,8 @@ namespace WindowsFormsApp
 
             btnXemSinhVien.ForeColor = Color.White;
 
+            btnXemSinhVien.Click += BtnXemSinhVien_Click;
+
             groupThongTin.Controls.Add(lblId);
             groupThongTin.Controls.Add(txtId);
 
@@ -557,6 +625,36 @@ namespace WindowsFormsApp
             lblTrang.Location = new Point(centerX - 5, 775);
 
             this.Controls.Add(lblTrang);
+
+            lblTitle = new Label();
+
+            lblTitle.Text = "Danh sách lớp học";
+
+            lblTitle.Font = new Font("Arial", 12, FontStyle.Bold);
+
+            lblTitle.Location = new Point(520, 130);
+
+            lblTitle.AutoSize = true;
+
+            this.Controls.Add(lblTitle);
+
+            btnQuayLai = new Button();
+
+            btnQuayLai.Text = "← Quay lại";
+
+            btnQuayLai.Size = new Size(120, 40);
+
+            btnQuayLai.Location = new Point(1120, 85);
+
+            btnQuayLai.BackColor = Color.Gray;
+
+            btnQuayLai.ForeColor = Color.White;
+
+            btnQuayLai.Visible = false;
+
+            btnQuayLai.Click += BtnQuayLai_Click;
+
+            this.Controls.Add(btnQuayLai);
 
             btnNext = new Button();
 
