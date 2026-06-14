@@ -10,6 +10,10 @@ namespace WindowsFormsApp
     {
         QLSVDataContext db = new QLSVDataContext();
 
+        private int currentPage = 1;
+        private int pageSize = 5;
+        private int totalPages = 1;
+
         GroupBox groupThongTin;
 
         Label lblMaSV;
@@ -51,18 +55,44 @@ namespace WindowsFormsApp
             CreateUI();
 
             LoadSinhVien();
+
+            txtTimKiem.KeyDown += TxtTimKiem_KeyDown;
+        }
+
+        private void TxtTimKiem_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                BtnTim_Click(null, null);
+            }
         }
 
         private void LoadSinhVien()
         {
-            dgvSinhVien.DataSource = db.tbl_sinhviens.Select(s => new
-            {
-                s.id,
-                s.hoten,
-                s.gioitinh,
-                s.ngaysinh,
-                s.malop
-            }).ToList();
+            var danhSach = db.tbl_sinhviens.ToList();
+
+            int totalRecords = danhSach.Count;
+
+            totalPages = (int)Math.Ceiling((double)totalRecords / pageSize);
+
+            if (totalPages == 0)
+                totalPages = 1;
+
+            dgvSinhVien.DataSource = danhSach
+                .Skip((currentPage - 1) * pageSize)
+                .Take(pageSize)
+                .Select(s => new
+                {
+                    s.id,
+                    s.hoten,
+                    s.gioitinh,
+                    s.ngaysinh,
+                    s.malop
+                })
+                .ToList();
+
+            lblTrang.Text = "Trang " + currentPage + "/" + totalPages +
+                            " | " + totalRecords + " bản ghi";
         }
 
         private void BtnThem_Click(object sender, EventArgs e)
@@ -261,6 +291,68 @@ namespace WindowsFormsApp
 
             BtnLamMoi_Click(null, null);
         }
+
+        private void BtnFirst_Click(object sender, EventArgs e)
+        {
+            currentPage = 1;
+
+            LoadSinhVien();
+        }
+
+        private void BtnPrev_Click(object sender, EventArgs e)
+        {
+            if (currentPage > 1)
+            {
+                currentPage--;
+
+                LoadSinhVien();
+            }
+        }
+
+        private void BtnNext_Click(object sender, EventArgs e)
+        {
+            if (currentPage < totalPages)
+            {
+                currentPage++;
+
+                LoadSinhVien();
+            }
+        }
+
+        private void BtnLast_Click(object sender, EventArgs e)
+        {
+            currentPage = totalPages;
+
+            LoadSinhVien();
+        }
+
+        private void BtnTim_Click(object sender, EventArgs e)
+        {
+            string keyword = txtTimKiem.Text.Trim();
+
+            if (keyword == "")
+            {
+                currentPage = 1;
+
+                LoadSinhVien();
+
+                return;
+            }
+
+            dgvSinhVien.DataSource = db.tbl_sinhviens
+                .Where(s => s.hoten.Contains(keyword))
+                .Select(s => new
+                {
+                    s.id,
+                    s.hoten,
+                    s.gioitinh,
+                    s.ngaysinh,
+                    s.malop
+                })
+                .ToList();
+
+            lblTrang.Text = "Tìm thấy " + dgvSinhVien.Rows.Count + " kết quả";
+        }
         private void CreateUI()
         {
             this.Dock = DockStyle.Fill;
@@ -453,6 +545,8 @@ namespace WindowsFormsApp
 
             btnTim.ForeColor = Color.White;
 
+            btnTim.Click += BtnTim_Click;
+
             this.Controls.Add(lblTimKiem);
             this.Controls.Add(txtTimKiem);
             this.Controls.Add(btnTim);
@@ -483,6 +577,8 @@ namespace WindowsFormsApp
 
             this.Controls.Add(btnFirst);
 
+            btnFirst.Click += BtnFirst_Click;
+
             btnPrev = new Button();
 
             btnPrev.Text = "<";
@@ -492,6 +588,8 @@ namespace WindowsFormsApp
             btnPrev.Location = new Point(centerX - 140, 790);
 
             this.Controls.Add(btnPrev);
+
+            btnPrev.Click += BtnPrev_Click;
 
             lblTrang = new Label();
 
@@ -513,6 +611,8 @@ namespace WindowsFormsApp
 
             this.Controls.Add(btnNext);
 
+            btnNext.Click += BtnNext_Click;
+
             btnLast = new Button();
 
             btnLast.Text = ">>";
@@ -522,6 +622,8 @@ namespace WindowsFormsApp
             btnLast.Location = new Point(centerX + 230, 790);
 
             this.Controls.Add(btnLast);
+
+            btnLast.Click += BtnLast_Click;
         }
 
         private void UC_QuanLySinhVien_Load(object sender, EventArgs e)
