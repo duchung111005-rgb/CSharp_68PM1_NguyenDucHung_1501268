@@ -328,19 +328,24 @@ namespace WindowsFormsApp
 
         private void BtnTim_Click(object sender, EventArgs e)
         {
-            string keyword = txtTimKiem.Text.Trim();
+            string keyword = txtTimKiem.Text.Trim().ToLower();
 
             if (keyword == "")
             {
                 currentPage = 1;
-
                 LoadSinhVien();
-
                 return;
             }
 
             dgvSinhVien.DataSource = db.tbl_sinhviens
-                .Where(s => s.hoten.Contains(keyword))
+                .ToList()
+                .Where(s =>
+                {
+                    string[] parts = s.hoten.Trim().Split(' ');
+                    string ten = parts[parts.Length - 1].ToLower();
+
+                    return ten.Contains(keyword);
+                })
                 .Select(s => new
                 {
                     s.id,

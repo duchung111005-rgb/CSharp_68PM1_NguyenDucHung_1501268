@@ -9,6 +9,10 @@ namespace WindowsFormsApp
     {
         QLSVDataContext db = new QLSVDataContext();
 
+        private int currentPage = 1;
+        private int pageSize = 5;
+        private int totalPages = 1;
+
         GroupBox groupThongTin;
 
         Label lblId;
@@ -47,21 +51,280 @@ namespace WindowsFormsApp
             CreateUI();
 
             LoadLopHoc();
+
+            txtTimKiem.KeyDown += TxtTimKiem_KeyDown;
+        }
+
+        private void TxtTimKiem_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                BtnTim_Click(null, null);
+            }
         }
 
         private void LoadLopHoc()
         {
-            dgvLopHoc.DataSource = db.tbl_lophocs.Select(l => new
-            {
-                l.id,
-                l.malop,
-                l.tenlop,
-                l.ghichu
-            }).ToList();
+            var danhSach = db.tbl_lophocs.ToList();
 
-            lblTrang.Text = "Tổng: " + db.tbl_lophocs.Count() + " lớp";
+            int totalRecords = danhSach.Count;
+
+            totalPages = (int)Math.Ceiling((double)totalRecords / pageSize);
+
+            if (totalPages == 0)
+                totalPages = 1;
+
+            dgvLopHoc.DataSource = danhSach
+                .Skip((currentPage - 1) * pageSize)
+                .Take(pageSize)
+                .Select(x => new
+                {
+                    x.id,
+                    x.malop,
+                    x.tenlop,
+                    x.ghichu
+                })
+                .ToList();
+
+            lblTrang.Text = "Trang " + currentPage + "/" + totalPages +
+                            " | " + totalRecords + " bản ghi";
         }
 
+        private void DgvLopHoc_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex < 0) return;
+
+            DataGridViewRow row = dgvLopHoc.Rows[e.RowIndex];
+
+            txtId.Text = row.Cells[0].Value?.ToString();
+            txtMaLop.Text = row.Cells[1].Value?.ToString();
+            txtTenLop.Text = row.Cells[2].Value?.ToString();
+            txtGhiChu.Text = row.Cells[3].Value?.ToString();
+
+            txtId.Enabled = false;
+        }
+
+        private void BtnLamMoi_Click(object sender, EventArgs e)
+        {
+            txtId.Enabled = true;
+
+            txtId.Clear();
+            txtMaLop.Clear();
+            txtTenLop.Clear();
+            txtGhiChu.Clear();
+
+            dgvLopHoc.ClearSelection();
+
+            txtId.Focus();
+        }
+
+        private void BtnSua_Click(object sender, EventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(txtId.Text))
+            {
+                MessageBox.Show("Vui lòng chọn lớp cần sửa!");
+                return;
+            }
+
+            int id = Convert.ToInt32(txtId.Text);
+
+            var lop = db.tbl_lophocs.SingleOrDefault(x => x.id == id);
+
+            if (lop == null)
+            {
+                MessageBox.Show("Không tìm thấy lớp!");
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(txtMaLop.Text) ||
+                string.IsNullOrWhiteSpace(txtTenLop.Text))
+            {
+                MessageBox.Show("Vui lòng nhập đầy đủ thông tin!");
+                return;
+            }
+
+            lop.malop = txtMaLop.Text.Trim();
+            lop.tenlop = txtTenLop.Text.Trim();
+            lop.ghichu = txtGhiChu.Text.Trim();
+
+            db.SubmitChanges();
+
+            MessageBox.Show("Cập nhật lớp học thành công!");
+
+            LoadLopHoc();
+        }
+        private void BtnXoa_Click(object sender, EventArgs e)
+        {
+            if (txtId.Text.Trim() == "")
+            {
+                MessageBox.Show("Vui lòng chọn lớp cần xóa");
+                return;
+            }
+
+            DialogResult result = MessageBox.Show(
+                "Bạn có chắc muốn xóa lớp này?",
+                "Xác nhận",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question
+            );
+
+            if (result == DialogResult.No)
+                return;
+
+            int id = Convert.ToInt32(txtId.Text);
+
+            var lop = db.tbl_lophocs.SingleOrDefault(x => x.id == id);
+
+            if (lop == null)
+            {
+                MessageBox.Show("Không tìm thấy lớp");
+                return;
+            }
+
+            db.tbl_lophocs.DeleteOnSubmit(lop);
+
+            db.SubmitChanges();
+
+            MessageBox.Show("Xóa thành công");
+
+            LoadLopHoc();
+
+            BtnLamMoi_Click(null, null);
+        }
+
+        private void BtnThem_Click(object sender, EventArgs e)
+        {
+            if (
+                txtId.Text.Trim() == "" ||
+                txtMaLop.Text.Trim() == "" ||
+                txtTenLop.Text.Trim() == ""
+            )
+            {
+                MessageBox.Show(
+                    "Vui lòng nhập đầy đủ thông tin",
+                    "Thông báo",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning
+                );
+
+                return;
+            }
+
+            int id = Convert.ToInt32(txtId.Text);
+
+            var checkId = db.tbl_lophocs.FirstOrDefault(x => x.id == id);
+
+            if (checkId != null)
+            {
+                MessageBox.Show(
+                    "Trùng ID lớp",
+                    "Thông báo",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning
+                );
+
+                return;
+            }
+
+            var checkMaLop = db.tbl_lophocs.FirstOrDefault(
+                x => x.malop == txtMaLop.Text.Trim()
+            );
+
+            if (checkMaLop != null)
+            {
+                MessageBox.Show(
+                    "Trùng mã lớp",
+                    "Thông báo",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning
+                );
+
+                return;
+            }
+
+            tbl_lophoc lop = new tbl_lophoc();
+
+            lop.id = id;
+
+            lop.malop = txtMaLop.Text.Trim();
+
+            lop.tenlop = txtTenLop.Text.Trim();
+
+            lop.ghichu = txtGhiChu.Text.Trim();
+
+            db.tbl_lophocs.InsertOnSubmit(lop);
+
+            db.SubmitChanges();
+
+            MessageBox.Show(
+                "Thêm lớp học thành công",
+                "Thông báo",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information
+            );
+
+            LoadLopHoc();
+
+            BtnLamMoi_Click(null, null);
+        }
+
+        private void BtnTim_Click(object sender, EventArgs e)
+        {
+            string keyword = txtTimKiem.Text.Trim().ToLower();
+
+            if (keyword == "")
+            {
+                currentPage = 1;
+                LoadLopHoc();
+                return;
+            }
+
+            dgvLopHoc.DataSource = db.tbl_lophocs
+                .Where(l =>
+                    l.id.ToString().Contains(keyword) ||
+                    l.malop.ToLower().Contains(keyword) ||
+                    l.tenlop.ToLower().Contains(keyword))
+                .Select(l => new
+                {
+                    l.id,
+                    l.malop,
+                    l.tenlop,
+                    l.ghichu
+                })
+                .ToList();
+
+            lblTrang.Text = "Tìm thấy " + dgvLopHoc.Rows.Count + " kết quả";
+        }
+
+        private void BtnFirst_Click(object sender, EventArgs e)
+        {
+            currentPage = 1;
+            LoadLopHoc();
+        }
+
+        private void BtnPrev_Click(object sender, EventArgs e)
+        {
+            if (currentPage > 1)
+            {
+                currentPage--;
+                LoadLopHoc();
+            }
+        }
+
+        private void BtnNext_Click(object sender, EventArgs e)
+        {
+            if (currentPage < totalPages)
+            {
+                currentPage++;
+                LoadLopHoc();
+            }
+        }
+
+        private void BtnLast_Click(object sender, EventArgs e)
+        {
+            currentPage = totalPages;
+            LoadLopHoc();
+        }
         private void CreateUI()
         {
             this.Dock = DockStyle.Fill;
@@ -138,6 +401,8 @@ namespace WindowsFormsApp
 
             btnThem.ForeColor = Color.White;
 
+            btnThem.Click += BtnThem_Click;
+
             btnSua = new Button();
 
             btnSua.Text = "Sửa";
@@ -149,6 +414,8 @@ namespace WindowsFormsApp
             btnSua.BackColor = Color.LimeGreen;
 
             btnSua.ForeColor = Color.White;
+
+            btnSua.Click += BtnSua_Click;
 
             btnXoa = new Button();
 
@@ -162,6 +429,8 @@ namespace WindowsFormsApp
 
             btnXoa.ForeColor = Color.White;
 
+            btnXoa.Click += BtnXoa_Click;
+
             btnLamMoi = new Button();
 
             btnLamMoi.Text = "Làm mới";
@@ -173,6 +442,8 @@ namespace WindowsFormsApp
             btnLamMoi.BackColor = Color.Gray;
 
             btnLamMoi.ForeColor = Color.White;
+
+            btnLamMoi.Click += BtnLamMoi_Click;
 
             btnXemSinhVien = new Button();
 
@@ -229,6 +500,8 @@ namespace WindowsFormsApp
 
             btnTim.ForeColor = Color.White;
 
+            btnTim.Click += BtnTim_Click;
+
             this.Controls.Add(lblTimKiem);
             this.Controls.Add(txtTimKiem);
             this.Controls.Add(btnTim);
@@ -242,6 +515,8 @@ namespace WindowsFormsApp
             dgvLopHoc.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
 
             dgvLopHoc.AllowUserToAddRows = false;
+
+            dgvLopHoc.CellClick += DgvLopHoc_CellClick;
 
             this.Controls.Add(dgvLopHoc);
 
@@ -257,6 +532,8 @@ namespace WindowsFormsApp
 
             this.Controls.Add(btnFirst);
 
+            btnFirst.Click += BtnFirst_Click;
+
             btnPrev = new Button();
 
             btnPrev.Text = "<";
@@ -266,6 +543,8 @@ namespace WindowsFormsApp
             btnPrev.Location = new Point(centerX - 140, 760);
 
             this.Controls.Add(btnPrev);
+
+            btnPrev.Click += BtnPrev_Click;
 
             lblTrang = new Label();
 
@@ -289,6 +568,8 @@ namespace WindowsFormsApp
 
             this.Controls.Add(btnNext);
 
+            btnNext.Click += BtnNext_Click;
+
             btnLast = new Button();
 
             btnLast.Text = ">>";
@@ -298,6 +579,8 @@ namespace WindowsFormsApp
             btnLast.Location = new Point(centerX + 230, 760);
 
             this.Controls.Add(btnLast);
+
+            btnLast.Click += BtnLast_Click;
         }
 
         private void UC_QuanLyLopHoc_Load(object sender, EventArgs e)
